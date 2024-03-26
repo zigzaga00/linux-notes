@@ -91,3 +91,48 @@ We can use the `deluser` command to delete a user from a group by specifying the
 
 We can *delete* users with the `userdel` command. The only argument we need to pass to it is a username. We can use the `-r` flag to recursively remove the contents of the home directory and mail for the user from `/var/mail`. The `-f` flag will do the same as the `-r` flag but it will enforce the deletion of the user even if they are currently logged in. It might also delete any groups with the user's name.
 
+## group management
+
+### groups
+
+Groups let us more easily manage users which need similar access rights. We can give them the access rights via a group rather than individually changing the rights for each user. Groups therefore simplify user management.
+
+Groups can enhance resource sharing as we can use them to manage access to files and directories.
+
+Groups let us strengthen system security. Groups can be given access to a specific command and they can let us restrict or give access to resources.
+
+Each user has a primary group and they can also belong to secondary groups. The primary groups are stored in `/etc/passwd` and they determine the default ownership of files when they are created. We can check the names of groups along with their corresponding `gid` numbers by looking at `/etc/group`
+
+We can check which groups our current user belongs to by using `groups` We can check which groups a different user belongs to by specifying their username like so `groups billybob`
+
+There are some built-in groups which are important. The `root` group has admin privs and therefore members of it have *complete control over the system*.
+
+Members of the `sudo` aka `wheel` group have access to commands on a temporary basis with elevated privs via the use of the `sudo` command.
+
+Members of the `adm` group can read log files.
+
+Members of the `lpadmin` aka `lp` group can manage printers and print jobs.
+
+Members of the `www-data` group can access web content. This group is used for web server processes such as Apache or Nginx.
+
+Members of the `plugdev` group can manage pluggable devices such as pen drives and external harddrives.
+
+### managing group members
+
+We can change the *primary* group of a user with `sudo usermod -g new_group lauren` or we can add a new *secondary* group to a user with `sudo usermod -aG new_secondary_group lauren`
+
+We can delete a user from a group using `sudo deluser lauren adm` but if this tool has not been installed we can do it with `sudo usermod -g g1,g2 billybob` In this case we want to delete billybob from g3 but not from g1,g2 so we need to specify the secondary groups he is in which we want him to remain in.
+
+### creating, modifying and deleting groups
+
+We can create our own groups and give them a custom `gid` - this is usually above 1000 but we can use any number. We might use a range of numbers for the `gid` of custom groups. We must use a *unique* `gid`.
+
+We can use `sudo groupadd -g 2001 apps` The `-g` flag lets us specify the `gid`.
+
+We can modify existing groups using `sudo groupmod -n cool_apps -g 2002 apps` The `-g` flag is the same as before and the `-n` flag lets us change the name of the group.
+
+> [!CAUTION]
+> Modifying group ids can negatively impact access to resources for users in the group
+
+To delete a group, we can use `sudo groupdel cool_apps` This will not work if the group which we are trying to delete is the *primary group* of *any user*.
+
