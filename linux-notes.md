@@ -312,4 +312,20 @@ MAILTO="dduck@duckyduck.com"
 0 8 * * * /home/user/check.sh
 ```
 
+#### creating system wide cron jobs
+
+We can also create *system wide* cron jobs which can sometimes be more useful than *user specific* cron jobs. The advantage to these cron jobs is that we can establish them as any user on the system rather than just the currently logged in user. An example of when this could be useful is if we need to establish a cron job as a different user - for example *www-data* - and we do not want to have to log in as them in order to set it up. It should be noted that only the *root* user should be allowed to create *system* cron jobs. The *system wide* cron jobs are defined in a regular file which can be edited by *root* directly - it is found at `/etc/crontab`
+
+> [!NOTE]
+> If the permissions on `/etc/crontab` are changed so other users or groups have *write* access to it, the commands in it *will not run*
+
+The syntax for *system wide* cron jobs is slightly different to *user specific* cron jobs since we need to specify which user we want the task to execute as.
+
+|minute|hour|day|month|day of the week|user|command|
+|---|---|---|---|---|---|---|
+|*|*|*|*|*|root|/root/update.sh|
+
+> [!NOTE]
+> Other users can *read* `/etc/crontab`
+
 
