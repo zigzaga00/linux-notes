@@ -207,4 +207,109 @@ If we want to just have a look at the contents of our *crontab* file we can use 
 
 ##### crontab syntax
 
+We can define some *environment variables* in the *crontab* file. We could for example set the `SHELL` environment variable because the default shell used is `/bin/sh` and we might want to use `/bin/bash` Another environment variable we could set is the `PATH` because by default `cron` will use `/usr/bin:/bin`
+
+The actual cronjob syntax specifies time and the command to run as shown below (in this example we are using `*` to be a wildcard to mean every so the command will run every minute of every hour of every day of every month on every day of the week):
+
+|minute|hour|day|month|day of the week|command|
+|---|---|---|---|---|---|
+|*|*|*|*|*|echo "hello" > /home/user/test.txt|
+
+An example of how we can enter a command to run as a cron job is:
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+* * * * * ping -c 1 google.com >> test.txt
+```
+
+The command can be specified in the *crontab* file as above. If we want to run something more complicated, we can specify a path to a *shell script* in the command section.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+* * * * * /home/user/backup.sh >> test.txt
+```
+
+###### time format
+
+We can specify a value directly - this one will execute the command at 08:30 every day.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+30 8 * * * ping -c 1 google.com >> test.txt
+```
+
+We can specify multiple values - this one executes the command at the specified minutes past every hour.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+0,15,30,45 * * * * ping -c 1 google.com >> test.txt
+```
+
+We can specify a range of values - this one executes the command on every hour including 5:00 and 17:00.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+0 5-17 * * * ping -c 1 google.com >> test.txt
+```
+
+We can specify every so many minutes or hours etc - this one executes the command every ten minutes.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+*/10 * * * * ping -c 1 google.com >> test.txt
+```
+
+The *day of the week* value acts as a filter. If we want to specify *Sunday* we can use either 0 or 7 with the other days of the week being given the respective numeric values - this example runs the command only on Fridays at 08:00.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+
+0 8 * * 5 ping -c 1 google.com >> test.txt
+```
+
+##### managing cron output
+
+In the previous examples we always *redirected* the output to a file. If we do not do this, `cron` will attempt to send the output to the email address of the user. If a *mail transfer agent* has not been installed, the command output will be discarded.
+
+We can check the results of cron jobs by using `journalctl -u cron.serice` - we can look at just the end of this log file by using `journalctl -u cron.serice -f`
+
+###### installing a mail transfer agent
+
+We can use:
+
+```bash
+sudo apt-get update
+sudo apt install mailutils
+```
+
+This will trigger a configuration wizard for *postfix* - we can either configure it to send mail to local users or via the internet.
+
+> [!TIP]
+> If *postfix* is already installed and we want to change its configuration we can use `sudo dpkg-reconfigure postfix`
+
+If we configure *postfix* to use *local only* we will see the cron job output in our mail which is found in `/var/mail`
+
+If we configure it to use the internet we will need to specify an email account for the output to be sent to. We can do this using the `MAILTO` *environment variable* in the *crontab* entry.
+
+```bash
+SHELL=/bin/bash
+PATH=/usr/local/bin:/usr/local/sbin:/sbin:/usr/sbin:/bin:/usr/bin
+MAILTO="dduck@duckyduck.com"
+
+0 8 * * * /home/user/check.sh
+```
+
 
