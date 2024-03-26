@@ -20,3 +20,17 @@ When using `ls` we can specify which directory we want to list the contents of l
 
 We can use `--color=` to specify what we want bash to do with colours. The values we can use are `never`, `auto` and `always`. The `--` work with whole words whereas `-` works with single letters. We could use `--color=always` to use colours.
 
+### displaying and changing directories
+
+In a shell, we are always in a directory. We can print the current working directory using `pwd` We can change our directory using the `cd` command. When we use the `cd` command, we need to specify the directory we would like to change to as its argument `cd /home/user/Documents` The current working directory can be specified with `.` or we can go up the directory tree one level using `cd ..`
+
+We can use *absolute* or *relative* paths. An *absolute* path defines the complete path and therefore works from anywhere. Absolute paths begin with `/` unless we use `~` to mean the user's home directory. An example of an absolute path is `/home/l337/Documents/other`
+
+A *relative* path is resolved according to our current working directory. We could just type the name of a directory in the current working directory `cd Documents/other` or we could use the `.` like so `cd ./Documents/other`
+
+We could combine `..` with relative paths to go up one level and then somewhere else `cd ../Downloads` We can also move up more than one level by using more `../` for example `cd ../../billybob/Documents`
+
+### combining commands
+
+We can combine commands in bash using `;` like so `cd /home/user/Documents; ls -al`
+
