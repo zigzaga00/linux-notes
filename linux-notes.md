@@ -34,3 +34,60 @@ We could combine `..` with relative paths to go up one level and then somewhere 
 
 We can combine commands in bash using `;` like so `cd /home/user/Documents; ls -al`
 
+## user management
+
+On a linux system, there are different types of user. There is a *root* user who has the highest privileges and therefore complete control of the system. This user is given the user id of 0. There are *regular* users who do not have the same privs as the root user, but they can be given elevated privs on a temporary basis using the *sudo* command which is explored in more detail later in this section. There are also *service* users. Services have user accounts so we can logically seperate them from the rest of the system. This is a good idea when it comes to security. An example is the `www-data` user account which the `apache2` service runs under. If an attacker compromises the machine via the web-server, they land on the machine as a restriced service user.
+
+All users have a *primary group* which is usually named the same as the username. Users can have additonal groups - the number of groups is not limited. Each user has a unique id and each group has a unique id.
+
+### /etc/passwd /etc/shadow and /etc/group
+
+User information is contained in the `/etc/passwd` file. The info is the username, uid, gid, user description (full name), home directory path and default shell. The password hash is not stored in this file - it used to be - there is an x where the hash would be. We could add a password hash here, but that is not good for security - it is a technique we can use as attacker's if `/etc/passwd` is writeable.
+
+The password hashes are stored in the `/etc/shadow` file. This file should only be accessible to the root user or users with elevated privs as it contains sensitive data. In addition to the password hashes, it stores the date of the last password change and password expiry dates.
+
+The hashing algorithm used for the password hash can be determined from the first part of the hash. The hash will generally be of the following format `$type:$salt$hashedpassword` If we see * or ! instead of a hash, it means that password logins have been disabled for that user. The ! specifically means that the password for that user has been locked and therefore cannot be used. We could still be able to switch to that user or use key based authentication, however.
+
+After the hash, we will see the date the password was last changed (the number specifies the number of days from *January 1st 1970*), the minimum password age (which is usually set to 0 which means there is no minimum password age), the maximum password age (how long before the password has to be changed - this is set to 99999 by default), and the password change warning number which is how long before the password expires that the user is notified that they need to change their password.
+
+The `/etc/group` file contains data about the additional groups. This is a useful file to look at when we are enumerating a machine and want to know which groups are on it as it lists all the additonal groups along with the names of users assigned to it. This file is usually readable by all users.
+
+### creating and securing users
+
+We can use the `useradd` command to create a new user. An important flag is `-m` which specifies that the user should have a home directory. Service users do not need home directories. The `-d` flag lets us specify a path for the home directory of the user. The `-s` flag lets us specify a default shell. An example command to create a new user with a home directory and bash as a shell is `sudo useradd -m -s "/bin/bash" dmouse`
+
+We can specify the groups a new user belongs to. We can specify a *primary* group using the `-g` flag. We can specify additional *secondary* groups by using the `-G` flag.
+
+Once we have created a new user, we need to give them a password if we want them to be able to log into the system. The `passwd` command lets us do this. The `-S` flag shows us the password status. The `-d` flag will delete the password. The `-n` flag will let us specify the minimum password age whilst the `-x` flag lets us specify the maximum password age - both these values will be in days. The `-l` flag will lock the password whilst the `-u` flag will unlock the password.
+
+When we look at the status of the password, we might see `P` which means a regular password is being used and is not locked. If we see `L` then the password is locked. Then we will see the date the password was changed. We then see the minimum, maximum, and warning data. We can see the password status for other users by specifying their name like so `sudo passwd -S dmouse`
+
+We can set a password for a user with the command `sudo passwd dmouse` and then specify the new password when we are prompted to do so.
+
+After the maximum password age the user will be forced to change their password. The minimum password age value will specify how long the user needs to wait after changing their password before they can change it again.
+
+When we look at the status of a password, a `P` means the password is normal whilst an `L` means it has been locked. The date is when the password was last changed. The next two numbers are the minimum and maximum. The next number specifies how many days before the maximum is reached that a warning will be given.
+
+If a user is operating `passwd` with elevated privs password policies can be ignored whereas a low privileged user will find that password policies are enforced.
+
+### modifying users
+
+We can *modify* users using the `usermod` command. The `-c` flag lets us change the user description (full name) whilst the `-s` flag lets us change the default shell.
+
+We could use the `-d` flag to change the home directory along with the `-m` flag to move the existing home directory to the new location. We could also use the `-l` flag to change the linux username.
+
+> [!CAUTION]
+> Changing the home directory or linux username can break apps which use the original values
+
+When we change the default shell using the `usermod` command, we can use any shell - it does not have to be in the `/etc/shells` file. If a user is changing their own default shell, they will need to use a shell in `/etc/shells` and they need to use the `chsh` command with the `-s` flag set.
+
+We can use the `-g` flag to change the *primary* group, the `-G` flag to change *secondary* groups and the `-aG` flag to add *secondary* groups.
+
+If we are changing the *secondary* groups with the `-G` flag, we need to specify all of the current groups if we want to keep them - if we do not specify an existing group when we use the `-G` flag the group will be removed from the user.
+
+We can use the `deluser` command to delete a user from a group by specifying the user and then the group.
+
+### deleting users
+
+We can *delete* users with the `userdel` command. The only argument we need to pass to it is a username. We can use the `-r` flag to recursively remove the contents of the home directory and mail for the user from `/var/mail`. The `-f` flag will do the same as the `-r` flag but it will enforce the deletion of the user even if they are currently logged in. It might also delete any groups with the user's name.
+
