@@ -328,4 +328,20 @@ The syntax for *system wide* cron jobs is slightly different to *user specific* 
 > [!NOTE]
 > Other users can *read* `/etc/crontab`
 
+### cron jobs best practice
+
+- Schedule tasks evenly
+- Avoid peak hours where possible
+- Avoid executing the same task multiple times - `flock` can help with this
+- Log errors and check them frequently
+- Add error checks to automated scripts
+- Run tasks with the *least privilege* possible
+- Secure scripts and commands by using correct *permissions* - maybe make them *read only*
+- Do not store sensitive data in *crontab* files
+- Test scripts before adding as cron jobs
+- Ensure scripts work with the `PATH` variable which `cron` uses - or we can set our own as already mentioned
+
+> [!TIP]
+> If you want to learn more about how attackers can abuse cron jobs to elevate their privileges on a compromised machine, please take a look at [abusing cron jobs](https://puzz00.github.io/linux_cron.html)
+
 
