@@ -136,3 +136,75 @@ We can modify existing groups using `sudo groupmod -n cool_apps -g 2002 apps` Th
 
 To delete a group, we can use `sudo groupdel cool_apps` This will not work if the group which we are trying to delete is the *primary group* of *any user*.
 
+## automating and scheduling tasks using cron jobs
+
+### cron jobs intro
+
+Cron jobs let us automate tasks and schedule them. This means we can get tasks to repeatedly run on our system following a pre-defined time schedule.
+
+Here are two examples of when we might want to set up a cron job:
+
+- We want to run a backup script everyday at 03:00
+- We want to execute an update script every hour of every day
+
+We could of course achieve this using a different tool such as `systemd` but cron jobs still have a place in the unix world.
+
+Cron jobs work on all *unix* systems not just *linux* systems - this makes them more *flexible* than `systemd`.
+
+We can automatically send *output* from cron jobs to email.
+
+Cron jobs are built into lots of products already - such as websites which use scheduled tasks - so it is useful to know about them.
+
+### cron variants
+
+There are different implementations of cron - they tend to support different features.
+
+#### vixie-cron
+
+`vixie-cron` is the default implementation of cron which ships with *ubuntu* - it is known as `cron`
+
+#### anacron
+
+`anacron` is also used on *ubuntu* systems - if the system is shut down the jobs scheduled by `anacron` will continue to work as they have been defined when the system reboots.
+
+#### cronie
+
+`cronie` is used on *centos* - it is a fork of `vixie-cron` and it has `anacron` built into it whereas on *ubuntu* systems these are seperate
+
+### cron daemon
+
+The *cron daemon* aka `crond` is the background process which manages scheduled tasks. It executes tasks at specified intervals and checks every minute if something needs to be executed.
+
+`crond` reads *cron tab* files. These files can be *user specific* such as `/var/cron/tabs` and `/var/spool/cron/crontabs` or they can be system wide such as `/etc/crontab`
+
+> [!IMPORTANT]
+> `/etc/crontab` must be owned by `root` and no other users or groups should be allowed *write* access to it
+
+On *debian* systems `crond` will also check in `/etc/cron.d` though in general we should not be setting up cron jobs using this file. We find sometimes that third-party apps put cron jobs into `etc/cron.d`
+
+#### creating user specific cron jobs
+
+We can edit the *crontab* file using `crontab -e` This will open an editor for the user to edit their own cron jobs.
+
+> [!IMPORTANT]
+> We should only use `crontab -e` to set up or edit *user specific* cron jobs
+
+The *crontab* file for the user will be opened - each user can specify their own tasks which they want to have executed in the background at scheduled times.
+
+> [!NOTE]
+> The `root` user can also create their own *user specific* cron jobs
+
+We can temporarialy change the `EDITOR` *environmental variable* for editing the *crontab* file using `EDITOR=nano crontab -e`
+
+Once cron jobs have been set up by a user, a *crontab* file under their username will be created in `/var/spool/cron/crontabs` which is a directory only accessbile to the `root` user.
+
+All user specific *crontab* files are kept in the one directory `/var/spool/cron/crontabs` but we should not really access this directory - we certainly should not edit the files in it directly.
+
+> [!IMPORTANT]
+> We should use `crontab -e` whenever we want to create a *user specific* cron job - *do not* edit the *crontab* file directly
+
+If we want to just have a look at the contents of our *crontab* file we can use `crontab -l` which will list the cron jobs in it.
+
+##### crontab syntax
+
+
